@@ -15,6 +15,7 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     @keyframes slideIn {
       from {
@@ -207,7 +208,38 @@ const translations = {
     trendAnalysis: 'ניתוח מגמות',
     reportPeriod: 'תקופת הדוח',
     from: 'מתאריך',
-    to: 'עד תאריך'
+    to: 'עד תאריך',
+    // New features
+    signature: 'חתימה',
+    sign: 'חתום',
+    signHere: 'חתום כאן',
+    clear: 'נקה',
+    signatureSaved: 'חתימה נשמרה בהצלחה',
+    timer: 'טיימר',
+    startTimer: 'התחל טיימר',
+    stopTimer: 'עצור טיימר',
+    resetTimer: 'איפוס',
+    gallery: 'גלריה',
+    allPhotos: 'כל התמונות',
+    noPhotos: 'אין תמונות',
+    backup: 'גיבוי',
+    restore: 'שחזור',
+    exportData: 'ייצוא נתונים',
+    importData: 'יבוא נתונים',
+    downloadBackup: 'הורד גיבוי',
+    uploadBackup: 'העלה גיבוי',
+    dataExported: 'הנתונים יוצאו בהצלחה',
+    dataImported: 'הנתונים יובאו בהצלחה',
+    darkMode: 'מצב לילה',
+    lightMode: 'מצב יום',
+    theme: 'ערכת נושא',
+    settings: 'הגדרות',
+    enableNotifications: 'הפעל התראות',
+    notificationsEnabled: 'ההתראות הופעלו',
+    viewGallery: 'צפה בגלריה',
+    signDocument: 'חתום על מסמך',
+    taskTimer: 'טיימר למשימה',
+    elapsed: 'זמן שעבר'
   },
   en: {
     siteTitle: 'Hertzel 28',
@@ -338,7 +370,38 @@ const translations = {
     trendAnalysis: 'Trend Analysis',
     reportPeriod: 'Report Period',
     from: 'From',
-    to: 'To'
+    to: 'To',
+    // New features
+    signature: 'Signature',
+    sign: 'Sign',
+    signHere: 'Sign here',
+    clear: 'Clear',
+    signatureSaved: 'Signature saved successfully',
+    timer: 'Timer',
+    startTimer: 'Start Timer',
+    stopTimer: 'Stop Timer',
+    resetTimer: 'Reset',
+    gallery: 'Gallery',
+    allPhotos: 'All Photos',
+    noPhotos: 'No photos',
+    backup: 'Backup',
+    restore: 'Restore',
+    exportData: 'Export Data',
+    importData: 'Import Data',
+    downloadBackup: 'Download Backup',
+    uploadBackup: 'Upload Backup',
+    dataExported: 'Data exported successfully',
+    dataImported: 'Data imported successfully',
+    darkMode: 'Dark Mode',
+    lightMode: 'Light Mode',
+    theme: 'Theme',
+    settings: 'Settings',
+    enableNotifications: 'Enable Notifications',
+    notificationsEnabled: 'Notifications enabled',
+    viewGallery: 'View Gallery',
+    signDocument: 'Sign Document',
+    taskTimer: 'Task Timer',
+    elapsed: 'Elapsed'
   }
 };
 
@@ -360,6 +423,15 @@ function SafetyApp() {
     { id: 2, type: 'incident', message: 'פיגום לא מאובטח', messageEn: 'Unsecured scaffolding', time: new Date(Date.now() - 120 * 60000), read: false }
   ]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem('safetyDarkMode') === 'true';
+  });
+  const [showSignaturePad, setShowSignaturePad] = useState(false);
+  const [showGallery, setShowGallery] = useState(false);
+  const [showTimer, setShowTimer] = useState(false);
+  const [timerRunning, setTimerRunning] = useState(false);
+  const [timerSeconds, setTimerSeconds] = useState(0);
+  const [showBackupMenu, setShowBackupMenu] = useState(false);
   const defaultIncidents = [
     {
       id: 1,
@@ -420,6 +492,25 @@ function SafetyApp() {
     localStorage.setItem('safetyLanguage', language);
   }, [language]);
 
+  useEffect(() => {
+    localStorage.setItem('safetyDarkMode', darkMode);
+    if (darkMode) {
+      document.body.style.backgroundColor = '#1a1a1a';
+    } else {
+      document.body.style.backgroundColor = '#f9fafb';
+    }
+  }, [darkMode]);
+
+  useEffect(() => {
+    let interval;
+    if (timerRunning) {
+      interval = setInterval(() => {
+        setTimerSeconds(prev => prev + 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [timerRunning]);
+
   const stats = {
     activeIncidents: incidents.filter(i => i.status === 'פתוח' || i.status === 'Open').length,
     totalWorkers: workers.length
@@ -451,6 +542,84 @@ function SafetyApp() {
     setNotifications(notifications.map(n => ({ ...n, read: true })));
   };
 
+  const exportBackup = () => {
+    const data = {
+      incidents,
+      workers,
+      notifications,
+      language,
+      darkMode,
+      timestamp: new Date().toISOString()
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `safety-app-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    addNotification('backup', t.dataExported, 'Data exported successfully');
+  };
+
+  const exportToPDF = (content, filename) => {
+    try {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      
+      doc.setFontSize(16);
+      doc.text(content.title || 'Safety Report', 20, 20);
+      
+      doc.setFontSize(12);
+      let y = 40;
+      
+      if (content.incidents) {
+        doc.text('Incidents Summary:', 20, y);
+        y += 10;
+        content.incidents.forEach((inc, idx) => {
+          if (y > 270) {
+            doc.addPage();
+            y = 20;
+          }
+          doc.text(`${idx + 1}. ${inc.descriptionEn || inc.description}`, 20, y);
+          doc.text(`   Severity: ${inc.severityEn || inc.severity}`, 20, y + 7);
+          doc.text(`   Status: ${inc.statusEn || inc.status}`, 20, y + 14);
+          y += 25;
+        });
+      }
+      
+      doc.save(filename || 'safety-report.pdf');
+      addNotification('pdf', t.exportPDF, 'PDF exported successfully');
+    } catch (error) {
+      console.error('PDF export error:', error);
+      alert('Error exporting PDF');
+    }
+  };
+
+  const importBackup = (file) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (data.incidents) setIncidents(data.incidents);
+        if (data.workers) setWorkers(data.workers);
+        if (data.notifications) setNotifications(data.notifications);
+        if (data.language) setLanguage(data.language);
+        if (typeof data.darkMode !== 'undefined') setDarkMode(data.darkMode);
+        addNotification('backup', t.dataImported, 'Data imported successfully');
+      } catch (error) {
+        alert('Error importing backup file');
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const formatTime = (seconds) => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const getTimeAgo = (time) => {
@@ -462,7 +631,7 @@ function SafetyApp() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50" dir={isRTL ? 'rtl' : 'ltr'}>
+    <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`} dir={isRTL ? 'rtl' : 'ltr'}>
       {sidebarOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={() => setSidebarOpen(false)} />
       )}
@@ -492,6 +661,34 @@ function SafetyApp() {
             <button onClick={() => { setCurrentPage('reports'); setSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors ${isRTL ? 'text-right flex-row-reverse' : 'text-left'} border-b border-gray-100`}>
               <div className="text-gray-400"><Award size={20} /></div>
               <span className="flex-1 text-sm">{t.reports}</span>
+            </button>
+          </SidebarSection>
+
+          <SidebarSection title={t.settings} expanded={expandedSections.other} onToggle={() => toggleSection('other')} isRTL={isRTL}>
+            <button onClick={() => { setShowGallery(true); setSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors ${isRTL ? 'text-right flex-row-reverse' : 'text-left'} border-b border-gray-100`}>
+              <div className="text-gray-400">🖼️</div>
+              <span className="flex-1 text-sm">{t.gallery}</span>
+            </button>
+            <button onClick={() => { setShowTimer(true); setSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors ${isRTL ? 'text-right flex-row-reverse' : 'text-left'} border-b border-gray-100`}>
+              <div className="text-gray-400">⏱️</div>
+              <span className="flex-1 text-sm">{t.timer}</span>
+            </button>
+            <button onClick={() => setShowBackupMenu(!showBackupMenu)} className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors ${isRTL ? 'text-right flex-row-reverse' : 'text-left'} border-b border-gray-100`}>
+              <div className="text-gray-400">💾</div>
+              <span className="flex-1 text-sm">{t.backup}</span>
+            </button>
+            {showBackupMenu && (
+              <div className="bg-gray-50 px-8 py-2">
+                <button onClick={exportBackup} className="w-full py-2 text-sm text-blue-600 hover:text-blue-800">{t.downloadBackup}</button>
+                <label className="w-full py-2 text-sm text-blue-600 hover:text-blue-800 cursor-pointer block">
+                  {t.uploadBackup}
+                  <input type="file" accept=".json" onChange={(e) => e.target.files[0] && importBackup(e.target.files[0])} className="hidden" />
+                </label>
+              </div>
+            )}
+            <button onClick={() => setDarkMode(!darkMode)} className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors ${isRTL ? 'text-right flex-row-reverse' : 'text-left'} border-b border-gray-100`}>
+              <div className="text-gray-400">{darkMode ? '☀️' : '🌙'}</div>
+              <span className="flex-1 text-sm">{darkMode ? t.lightMode : t.darkMode}</span>
             </button>
           </SidebarSection>
 
@@ -597,6 +794,10 @@ function SafetyApp() {
         {currentPage === 'search' && <SearchPage incidents={incidents} workers={workers} t={t} isRTL={isRTL} language={language} />}
         {currentPage === 'reports' && <ReportsPage incidents={incidents} t={t} isRTL={isRTL} language={language} />}
       </main>
+
+      {showGallery && <Gallery incidents={incidents} onClose={() => setShowGallery(false)} isRTL={isRTL} t={t} />}
+      {showTimer && <Timer onClose={() => setShowTimer(false)} isRTL={isRTL} t={t} timerRunning={timerRunning} setTimerRunning={setTimerRunning} timerSeconds={timerSeconds} setTimerSeconds={setTimerSeconds} formatTime={formatTime} />}
+      {showSignaturePad && <SignaturePad onClose={() => setShowSignaturePad(false)} onSave={(sig) => { console.log('Signature saved:', sig); setShowSignaturePad(false); addNotification('signature', t.signatureSaved, 'Signature saved'); }} isRTL={isRTL} t={t} />}
 
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg">
         <div className="flex justify-around p-2">
@@ -1423,6 +1624,166 @@ function SidebarSection({ title, children, expanded, onToggle, isRTL }) {
         <ChevronDown size={20} className={`transform transition-transform ${expanded ? 'rotate-180' : ''}`} />
       </button>
       {expanded && <div>{children}</div>}
+    </div>
+  );
+}
+
+function Gallery({ incidents, onClose, isRTL, t }) {
+  const allPhotos = incidents.filter(i => i.image).map(i => ({ id: i.id, image: i.image, description: i.description, descriptionEn: i.descriptionEn }));
+  
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div className={`flex items-center justify-between p-4 border-b ${isRTL ? 'flex-row-reverse' : ''}`}>
+          <h2 className="text-xl font-bold">{t.gallery}</h2>
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full">
+            <X size={24} />
+          </button>
+        </div>
+        <div className="overflow-y-auto max-h-[calc(90vh-80px)] p-4">
+          {allPhotos.length === 0 ? (
+            <div className="text-center py-12 text-gray-500">{t.noPhotos}</div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {allPhotos.map(photo => (
+                <div key={photo.id} className="relative group">
+                  <img src={photo.image} alt={photo.description} className="w-full h-48 object-cover rounded-lg" />
+                  <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 text-white p-2 text-sm rounded-b-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                    {isRTL ? photo.description : photo.descriptionEn}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Timer({ onClose, isRTL, t, timerRunning, setTimerRunning, timerSeconds, setTimerSeconds, formatTime }) {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-white rounded-lg max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+        <div className={`flex items-center justify-between p-4 border-b ${isRTL ? 'flex-row-reverse' : ''}`}>
+          <h2 className="text-xl font-bold">{t.timer}</h2>
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full">
+            <X size={24} />
+          </button>
+        </div>
+        <div className="p-8 text-center">
+          <div className="text-6xl font-mono font-bold text-blue-600 mb-8">
+            {formatTime(timerSeconds)}
+          </div>
+          <div className="flex gap-4 justify-center">
+            {!timerRunning ? (
+              <button onClick={() => setTimerRunning(true)} className="bg-green-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-green-700">
+                {t.startTimer}
+              </button>
+            ) : (
+              <button onClick={() => setTimerRunning(false)} className="bg-red-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-red-700">
+                {t.stopTimer}
+              </button>
+            )}
+            <button onClick={() => { setTimerRunning(false); setTimerSeconds(0); }} className="bg-gray-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-gray-700">
+              {t.resetTimer}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SignaturePad({ onClose, onSave, isRTL, t }) {
+  const canvasRef = React.useRef(null);
+  const [isDrawing, setIsDrawing] = React.useState(false);
+
+  const startDrawing = (e) => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX || e.touches[0].clientX) - rect.left;
+    const y = (e.clientY || e.touches[0].clientY) - rect.top;
+    
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    setIsDrawing(true);
+  };
+
+  const draw = (e) => {
+    if (!isDrawing) return;
+    
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX || e.touches[0].clientX) - rect.left;
+    const y = (e.clientY || e.touches[0].clientY) - rect.top;
+    
+    ctx.lineTo(x, y);
+    ctx.stroke();
+  };
+
+  const stopDrawing = () => {
+    setIsDrawing(false);
+  };
+
+  const clearCanvas = () => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  };
+
+  const saveSignature = () => {
+    const canvas = canvasRef.current;
+    const signature = canvas.toDataURL();
+    onSave(signature);
+  };
+
+  React.useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+  }, []);
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-white rounded-lg max-w-2xl w-full" onClick={(e) => e.stopPropagation()}>
+        <div className={`flex items-center justify-between p-4 border-b ${isRTL ? 'flex-row-reverse' : ''}`}>
+          <h2 className="text-xl font-bold">{t.signature}</h2>
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full">
+            <X size={24} />
+          </button>
+        </div>
+        <div className="p-4">
+          <div className="border-2 border-gray-300 rounded-lg mb-4">
+            <canvas
+              ref={canvasRef}
+              width={600}
+              height={300}
+              className="w-full cursor-crosshair"
+              onMouseDown={startDrawing}
+              onMouseMove={draw}
+              onMouseUp={stopDrawing}
+              onMouseLeave={stopDrawing}
+              onTouchStart={startDrawing}
+              onTouchMove={draw}
+              onTouchEnd={stopDrawing}
+            />
+          </div>
+          <div className="text-center text-sm text-gray-500 mb-4">{t.signHere}</div>
+          <div className="flex gap-4">
+            <button onClick={clearCanvas} className="flex-1 bg-gray-600 text-white py-3 rounded-lg font-bold hover:bg-gray-700">
+              {t.clear}
+            </button>
+            <button onClick={saveSignature} className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700">
+              {t.sign}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
