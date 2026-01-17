@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Safety App - הרצל 28</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+    
+    // Simple icon components as fallback
+    const Camera = () => <span>📷</span>;
+    const Users = () => <span>👥</span>;
+    const ClipboardCheck = () => <span>✅</span>;
+    const AlertTriangle = () => <span>⚠️</span>;
+    const Home = () => <span>🏠</span>;
+    const FileText = () => <span>📄</span>;
+    const Plus = () => <span>➕</span>;
+    const ChevronLeft = () => <span>◀</span>;
+    const X = () => <span>✖</span>;
+    const Menu = () => <span>☰</span>;
+    const HardHat = () => <span>⛑️</span>;
+    const Download = () => <span>⬇️</span>;
+    const BookOpen = () => <span>📖</span>;
+    const Award = () => <span>🏆</span>;
+    const Lightbulb = () => <span>💡</span>;
+    const MapPin = () => <span>📍</span>;
+    const ChevronDown = () => <span>▼</span>;
+    const Globe = () => <span>🌐</span>;
+const translations = {
+  he: {
+    siteTitle: 'הרצל 28',
+    newReport: 'דיווח מפגע חדש',
+    dailyChecklist: 'צ\'ק-ליסט יומי',
+    openIncidents: 'מפגעים פתוחים',
+    workerManagement: 'ניהול עובדים',
+    dashboard: 'לוח בקרה',
+    alerts: 'התראות',
+    search: 'חיפוש',
+    currentWorkers: 'עובדים נוכחים',
+    safetyIndex: 'מדד בטיחות',
+    reportIncident: 'דיווח מפגע',
+    manageWorkers: 'ניהול עובדים',
+    checklist: 'צ\'ק-ליסט',
+    incidents: 'מפגעים',
+    activeWorkers: 'עובדים פעילים',
+    userName: 'ויקטור ימין',
+    userRole: 'מפונה בטיחות',
+    generalLogbook: 'ניהול פנקס כללי',
+    siteDocs: 'מסמכי אתר',
+    other: 'שונות',
+    help: 'עזרה',
+    language: 'שפה',
+    logout: 'התנתק',
+    incidentDescription: 'תיאור המפגע',
+    descriptionPlaceholder: 'תאר את המפגע...',
+    severity: 'דרגת חומרה',
+    severe: 'חמורה',
+    medium: 'בינונית',
+    low: 'קלה',
+    photoIncident: 'צילום מפגע',
+    takePhoto: 'צלם תמונה',
+    submitReport: 'שלח דיווח',
+    workAtHeight: 'עבודה בגובה',
+    electrical: 'חשמל',
+    scaffolding: 'פיגומים',
+    saveChecklist: 'שמור צ\'ק-ליסט',
+    open: 'פתוח',
+    handled: 'טופל',
+    markAsHandled: 'לחץ לסימון כטופל',
+    status: 'סטטוס',
+    safetyOfficer: 'עובד בטיחות ראשי',
+    workManager: 'מנהל עבודה',
+    location: 'מיקום',
+    riskCategory: 'קטגוריית סיכון',
+    description: 'תיאור',
+    contractor: 'קבלן/תחלקה',
+    photos: 'תמונות',
+    attachments: 'מכותבים',
+    distributionList: 'רשימת תפוצה',
+    incidentDetails: 'פרטי המפגע',
+    safety: 'בטיחות',
+    humanResources: 'כח אדם',
+    equipment2: 'ציוד',
+    incidentsTab: 'מפגעים',
+    filterBy: 'סנן לפי:',
+    showing: 'מציג',
+    outOf: 'מתוך',
+    noRecordsFound: 'לא נמצאו רשומות',
+    summaryReport: 'דוח מרוכז',
+    checklistSaved: 'הצ\'ק-ליסט נשמר בהצלחה!',
+    // Checklist translations
+    checklistTitle: 'צ\'ק-ליסט בטיחות יומי',
+    checklistCategory: 'קטגוריה',
+    passed: 'תקין',
+    failed: 'לא תקין',
+    notChecked: 'לא נבדק',
+    notes: 'הערות',
+    addNote: 'הוסף הערה...',
+    // Checklist categories
+    ppe: 'ציוד מגן אישי',
+    siteAccess: 'גישה ואבטחת אתר',
+    fallProtection: 'הגנה מנפילה',
+    electricalSafety: 'בטיחות חשמל',
+    fireSafety: 'בטיחות אש',
+    housekeeping: 'סדר וניקיון',
+    // Checklist items
+    hardHats: 'קסדות לכל העובדים',
+    safetyVests: 'אפודים זוהרים',
+    safetyBoots: 'נעלי בטיחות',
+    safetyGlasses: 'משקפי מגן זמינים',
+    gatesSecured: 'שערי האתר מאובטחים',
+    signageVisible: 'שילוט אזהרה גלוי',
+    unauthorizedAccess: 'אין כניסה בלתי מורשית',
+    guardrailsInstalled: 'מעקות מותקנים',
+    openingsProtected: 'פתחים ברצפה מוגנים',
+    laddersSecured: 'סולמות מקובעים',
+    panelsLocked: 'לוחות חשמל נעולים',
+    cordsInspected: 'כבלי הארכה תקינים',
+    gfciWorking: 'הגנת פחת תקינה',
+    extinguishersAccessible: 'מטפים נגישים',
+    exitsClear: 'יציאות חירום פנויות',
+    hotWorkPermits: 'היתרי עבודה חמה',
+    walkwaysClear: 'מעברים פנויים',
+    wasteDisposed: 'פסולת מסולקת',
+    materialsStored: 'חומרים מאוחסנים כראוי',
+    // Notifications
+    notifications: 'התראות',
+    noNotifications: 'אין התראות חדשות',
+    newIncidentAlert: 'דווח מפגע חדש',
+    incidentHandled: 'מפגע סומן כטופל',
+    checklistCompleted: 'צ\'ק-ליסט יומי הושלם',
+    markAllRead: 'סמן הכל כנקרא',
+    minutesAgo: 'דקות',
+    hoursAgo: 'שעות',
+    justNow: 'עכשיו',
+    // Search
+    searchPlaceholder: 'חפש מפגעים, עובדים...',
+    searchResults: 'תוצאות חיפוש',
+    noResults: 'לא נמצאו תוצאות',
+    searchIn: 'חפש ב',
+    all: 'הכל',
+    // Reports
+    reports: 'דוחות',
+    generateReport: 'הפק דוח',
+    weeklyReport: 'דוח שבועי',
+    monthlyReport: 'דוח חודשי',
+    customReport: 'דוח מותאם',
+    exportPDF: 'ייצוא PDF',
+    exportExcel: 'ייצוא Excel',
+    totalIncidents: 'סה"כ מפגעים',
+    resolvedIncidents: 'מפגעים שטופלו',
+    pendingIncidents: 'מפגעים פתוחים',
+    safetyScore: 'ציון בטיחות',
+    incidentsByCategory: 'מפגעים לפי קטגוריה',
+    incidentsBySeverity: 'מפגעים לפי חומרה',
+    trendAnalysis: 'ניתוח מגמות',
+    reportPeriod: 'תקופת הדוח',
+    from: 'מתאריך',
+    to: 'עד תאריך'
+  },
+  en: {
+    siteTitle: 'Hertzel 28',
+    newReport: 'New Incident Report',
+    dailyChecklist: 'Daily Checklist',
+    openIncidents: 'Open Incidents',
+    workerManagement: 'Worker Management',
+    dashboard: 'Dashboard',
+    alerts: 'Alerts',
+    search: 'Search',
+    currentWorkers: 'Current Workers',
+    safetyIndex: 'Safety Index',
+    reportIncident: 'Report Incident',
+    manageWorkers: 'Manage Workers',
+    checklist: 'Checklist',
+    incidents: 'Incidents',
+    activeWorkers: 'Active Workers',
+    userName: 'Victor Yamin',
+    userRole: 'Safety Officer',
+    generalLogbook: 'General Logbook Management',
+    siteDocs: 'Site Documents',
+    other: 'Other',
+    help: 'Help',
+    language: 'Language',
+    logout: 'Logout',
+    incidentDescription: 'Incident Description',
+    descriptionPlaceholder: 'Describe the incident...',
+    severity: 'Severity Level',
+    severe: 'Severe',
+    medium: 'Medium',
+    low: 'Low',
+    photoIncident: 'Incident Photo',
+    takePhoto: 'Take Photo',
+    submitReport: 'Submit Report',
+    workAtHeight: 'Work at Height',
+    electrical: 'Electrical',
+    scaffolding: 'Scaffolding',
+    saveChecklist: 'Save Checklist',
+    open: 'Open',
+    handled: 'Handled',
+    markAsHandled: 'Click to mark as handled',
+    status: 'Status',
+    safetyOfficer: 'Chief Safety Officer',
+    workManager: 'Work Manager',
+    location: 'Location',
+    riskCategory: 'Risk Category',
+    description: 'Description',
+    contractor: 'Contractor/Department',
+    photos: 'Photos',
+    attachments: 'Attachments',
+    distributionList: 'Distribution List',
+    incidentDetails: 'Incident Details',
+    safety: 'Safety',
+    humanResources: 'Human Resources',
+    equipment2: 'Equipment',
+    incidentsTab: 'Incidents',
+    filterBy: 'Filter by:',
+    showing: 'Showing',
+    outOf: 'out of',
+    noRecordsFound: 'No records found',
+    summaryReport: 'Summary Report',
+    checklistSaved: 'Checklist saved successfully!',
+    // Checklist translations
+    checklistTitle: 'Daily Safety Checklist',
+    checklistCategory: 'Category',
+    passed: 'Passed',
+    failed: 'Failed',
+    notChecked: 'Not Checked',
+    notes: 'Notes',
+    addNote: 'Add note...',
+    // Checklist categories
+    ppe: 'Personal Protective Equipment (PPE)',
+    siteAccess: 'Site Access & Security',
+    fallProtection: 'Fall Protection',
+    electricalSafety: 'Electrical Safety',
+    fireSafety: 'Fire Safety',
+    housekeeping: 'Housekeeping',
+    // Checklist items
+    hardHats: 'Hard hats worn by all workers',
+    safetyVests: 'Safety vests visible',
+    safetyBoots: 'Safety boots worn',
+    safetyGlasses: 'Safety glasses available',
+    gatesSecured: 'Site gates secured',
+    signageVisible: 'Warning signage visible',
+    unauthorizedAccess: 'No unauthorized access',
+    guardrailsInstalled: 'Guardrails installed',
+    openingsProtected: 'Floor openings protected',
+    laddersSecured: 'Ladders secured',
+    panelsLocked: 'Electrical panels locked',
+    cordsInspected: 'Extension cords inspected',
+    gfciWorking: 'GFCI protection working',
+    extinguishersAccessible: 'Fire extinguishers accessible',
+    exitsClear: 'Emergency exits clear',
+    hotWorkPermits: 'Hot work permits obtained',
+    walkwaysClear: 'Walkways clear',
+    wasteDisposed: 'Waste properly disposed',
+    materialsStored: 'Materials properly stored',
+    // Notifications
+    notifications: 'Notifications',
+    noNotifications: 'No new notifications',
+    newIncidentAlert: 'New incident reported',
+    incidentHandled: 'Incident marked as handled',
+    checklistCompleted: 'Daily checklist completed',
+    markAllRead: 'Mark all as read',
+    minutesAgo: 'minutes ago',
+    hoursAgo: 'hours ago',
+    justNow: 'Just now',
+    // Search
+    searchPlaceholder: 'Search incidents, workers...',
+    searchResults: 'Search Results',
+    noResults: 'No results found',
+    searchIn: 'Search in',
+    all: 'All',
+    // Reports
+    reports: 'Reports',
+    generateReport: 'Generate Report',
+    weeklyReport: 'Weekly Report',
+    monthlyReport: 'Monthly Report',
+    customReport: 'Custom Report',
+    exportPDF: 'Export PDF',
+    exportExcel: 'Export Excel',
+    totalIncidents: 'Total Incidents',
+    resolvedIncidents: 'Resolved Incidents',
+    pendingIncidents: 'Pending Incidents',
+    safetyScore: 'Safety Score',
+    incidentsByCategory: 'Incidents by Category',
+    incidentsBySeverity: 'Incidents by Severity',
+    trendAnalysis: 'Trend Analysis',
+    reportPeriod: 'Report Period',
+    from: 'From',
+    to: 'To'
+  }
+};
+
+function SafetyApp() {
+  const [currentPage, setCurrentPage] = useState('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [language, setLanguage] = useState(() => {
+    return localStorage.getItem('safetyLanguage') || 'he';
+  });
+  const [showLanguageMenu, setShowLanguageMenu] = useState(false);
+  const [expandedSections, setExpandedSections] = useState({
+    general: false,
+    documents: false,
+    other: false,
+    help: false
+  });
+  const [notifications, setNotifications] = useState([
+    { id: 1, type: 'incident', message: 'עבודה בגובה ללא רתמה', messageEn: 'Work at height without harness', time: new Date(Date.now() - 30 * 60000), read: false },
+    { id: 2, type: 'incident', message: 'פיגום לא מאובטח', messageEn: 'Unsecured scaffolding', time: new Date(Date.now() - 120 * 60000), read: false }
+  ]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const defaultIncidents = [
+    {
+      id: 1,
+      description: 'עבודה בגובה ללא רתמה',
+      descriptionEn: 'Work at height without harness',
+      severity: 'חמורה',
+      severityEn: 'Severe',
+      status: 'פתוח',
+      statusEn: 'Open',
+      date: '15/01/2026',
+      location: 'קומה 3',
+      riskCategory: 'עבודה בגובה',
+      contractor: 'קבלן ראשי',
+      image: null
+    },
+    {
+      id: 2,
+      description: 'פיגום לא מאובטח',
+      descriptionEn: 'Unsecured scaffolding',
+      severity: 'בינונית',
+      severityEn: 'Medium',
+      status: 'פתוח',
+      statusEn: 'Open',
+      date: '14/01/2026',
+      location: 'קומה 2',
+      riskCategory: 'פיגומים',
+      contractor: 'קבלן משנה',
+      image: null
+    }
+  ];
+
+  const defaultWorkers = [
+    { id: 1, name: 'ויקטור ימין', nameEn: 'Victor Yamin', role: 'עובד בטיחות ראשי', roleEn: 'Chief Safety Officer' },
+    { id: 2, name: 'שאולי אבגבני', nameEn: 'Shauli Avigbeni', role: 'מנהל עבודה', roleEn: 'Work Manager' }
+  ];
+
+  // Load from localStorage or use defaults
+  const [incidents, setIncidents] = useState(() => {
+    const saved = localStorage.getItem('safetyIncidents');
+    return saved ? JSON.parse(saved) : defaultIncidents;
+  });
+
+  const [workers, setWorkers] = useState(() => {
+    const saved = localStorage.getItem('safetyWorkers');
+    return saved ? JSON.parse(saved) : defaultWorkers;
+  });
+
+  // Save to localStorage when data changes
+  useEffect(() => {
+    localStorage.setItem('safetyIncidents', JSON.stringify(incidents));
+  }, [incidents]);
+
+  useEffect(() => {
+    localStorage.setItem('safetyWorkers', JSON.stringify(workers));
+  }, [workers]);
+
+  useEffect(() => {
+    localStorage.setItem('safetyLanguage', language);
+  }, [language]);
+
+  const stats = {
+    activeIncidents: incidents.filter(i => i.status === 'פתוח' || i.status === 'Open').length,
+    totalWorkers: workers.length
+  };
+
+  const toggleSection = (section) => {
+    setExpandedSections({
+      ...expandedSections,
+      [section]: !expandedSections[section]
+    });
+  };
+
+  const t = translations[language];
+  const isRTL = language === 'he';
+
+  const addNotification = (type, message, messageEn) => {
+    const newNotification = {
+      id: Date.now(),
+      type,
+      message,
+      messageEn,
+      time: new Date(),
+      read: false
+    };
+    setNotifications(prev => [newNotification, ...prev]);
+  };
+
+  const markAllNotificationsRead = () => {
+    setNotifications(notifications.map(n => ({ ...n, read: true })));
+  };
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const getTimeAgo = (time) => {
+    const minutes = Math.floor((Date.now() - time.getTime()) / 60000);
+    if (minutes < 1) return t.justNow;
+    if (minutes < 60) return `${minutes} ${t.minutesAgo}`;
+    const hours = Math.floor(minutes / 60);
+    return `${hours} ${t.hoursAgo}`;
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50" dir={isRTL ? 'rtl' : 'ltr'}>
+      {sidebarOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={() => setSidebarOpen(false)} />
+      )}
+
+      <div className={`fixed top-0 ${isRTL ? 'right-0' : 'left-0'} h-full w-80 bg-white shadow-2xl z-50 transform transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : isRTL ? 'translate-x-full' : '-translate-x-full'}`}>
+        <div className="p-4 bg-gradient-to-r from-blue-900 to-blue-700 text-white">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="bg-white rounded-full p-3">
+              <HardHat size={32} className="text-blue-900" />
+            </div>
+            <div className="flex-1">
+              <h2 className="font-bold text-lg">{t.userName}</h2>
+              <p className="text-sm text-blue-100">{t.userRole}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="overflow-y-auto h-[calc(100%-180px)]">
+          <SidebarSection title={t.generalLogbook} expanded={expandedSections.general} onToggle={() => toggleSection('general')} isRTL={isRTL}>
+            <SidebarItem icon={<FileText size={20} />} label="רישום זיהוי" isRTL={isRTL} />
+            <SidebarItem icon={<Download size={20} />} label="בגלי מפקדים באתר" isRTL={isRTL} />
+          </SidebarSection>
+
+          <SidebarSection title={t.siteDocs} expanded={expandedSections.documents} onToggle={() => toggleSection('documents')} isRTL={isRTL}>
+            <SidebarItem icon={<FileText size={20} />} label={language === 'he' ? 'רישומים' : 'Records'} isRTL={isRTL} />
+            <SidebarItem icon={<BookOpen size={20} />} label={language === 'he' ? 'יומן עבודה' : 'Work Log'} isRTL={isRTL} />
+            <button onClick={() => { setCurrentPage('reports'); setSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors ${isRTL ? 'text-right flex-row-reverse' : 'text-left'} border-b border-gray-100`}>
+              <div className="text-gray-400"><Award size={20} /></div>
+              <span className="flex-1 text-sm">{t.reports}</span>
+            </button>
+          </SidebarSection>
+
+          <div className="border-b border-gray-200 relative">
+            <button onClick={() => setShowLanguageMenu(!showLanguageMenu)} className={`w-full flex items-center gap-3 px-4 py-4 hover:bg-gray-50 transition-colors ${isRTL ? 'text-right' : 'text-left'}`}>
+              <Globe size={20} className="text-gray-400" />
+              <span className="flex-1 text-sm font-medium">{t.language}</span>
+              <span className="text-sm text-blue-600">{language === 'he' ? 'עברית' : 'English'}</span>
+              <ChevronDown size={16} className={`text-gray-400 transform transition-transform ${showLanguageMenu ? 'rotate-180' : ''}`} />
+            </button>
+            
+            {showLanguageMenu && (
+              <div className="bg-white border-t border-gray-200">
+                <button onClick={() => { setLanguage('he'); setShowLanguageMenu(false); }} className={`w-full px-4 py-3 ${isRTL ? 'text-right' : 'text-left'} hover:bg-blue-50 transition-colors ${language === 'he' ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-700'}`}>
+                  עברית
+                </button>
+                <button onClick={() => { setLanguage('en'); setShowLanguageMenu(false); }} className={`w-full px-4 py-3 ${isRTL ? 'text-right' : 'text-left'} hover:bg-blue-50 transition-colors ${language === 'en' ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-700'}`}>
+                  English
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="p-4 border-t">
+            <button className="w-full bg-red-600 text-white rounded-lg py-3 font-bold hover:bg-red-700">
+              {t.logout}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <header className="bg-gradient-to-r from-blue-900 to-blue-700 text-white p-4 shadow-lg relative">
+        <div className="flex items-center justify-between">
+          <button onClick={() => setSidebarOpen(true)} className="p-2">
+            <Menu size={24} />
+          </button>
+          <h1 className="text-xl font-bold flex-1 text-center">
+            {currentPage === 'dashboard' && t.siteTitle}
+            {currentPage === 'report' && t.newReport}
+            {currentPage === 'checklist' && t.dailyChecklist}
+            {currentPage === 'incidents' && t.openIncidents}
+            {currentPage === 'workers' && t.workerManagement}
+            {currentPage === 'search' && t.search}
+            {currentPage === 'reports' && t.reports}
+          </h1>
+          {currentPage !== 'dashboard' ? (
+            <button onClick={() => setCurrentPage('dashboard')} className="p-2">
+              <ChevronLeft size={24} />
+            </button>
+          ) : (
+            <button onClick={() => setShowNotifications(!showNotifications)} className="p-2 relative">
+              <span>🔔</span>
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {unreadCount}
+                </span>
+              )}
+            </button>
+          )}
+        </div>
+
+        {/* Notifications Panel */}
+        {showNotifications && (
+          <div className={`absolute top-full ${isRTL ? 'left-4' : 'right-4'} w-80 bg-white rounded-xl shadow-2xl z-50 mt-2 overflow-hidden`}>
+            <div className="bg-gray-100 p-3 flex items-center justify-between">
+              <span className="font-bold text-gray-800">{t.notifications}</span>
+              {unreadCount > 0 && (
+                <button onClick={markAllNotificationsRead} className="text-sm text-blue-600 hover:underline">
+                  {t.markAllRead}
+                </button>
+              )}
+            </div>
+            <div className="max-h-80 overflow-y-auto">
+              {notifications.length === 0 ? (
+                <p className="p-4 text-center text-gray-500">{t.noNotifications}</p>
+              ) : (
+                notifications.map(notif => (
+                  <div key={notif.id} className={`p-3 border-b border-gray-100 ${!notif.read ? 'bg-blue-50' : ''} hover:bg-gray-50`}>
+                    <div className={`flex items-start gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                      <span className="text-xl">
+                        {notif.type === 'incident' ? '⚠️' : notif.type === 'checklist' ? '✅' : '📢'}
+                      </span>
+                      <div className={`flex-1 ${isRTL ? 'text-right' : 'text-left'}`}>
+                        <p className="text-sm text-gray-800">{language === 'he' ? notif.message : notif.messageEn}</p>
+                        <p className="text-xs text-gray-500 mt-1">{getTimeAgo(notif.time)}</p>
+                      </div>
+                      {!notif.read && <span className="w-2 h-2 bg-blue-500 rounded-full"></span>}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+      </header>
+
+      <main className="pb-20">
+        {currentPage === 'dashboard' && <Dashboard stats={stats} setCurrentPage={setCurrentPage} t={t} />}
+        {currentPage === 'report' && <ReportIncident setCurrentPage={setCurrentPage} incidents={incidents} setIncidents={setIncidents} t={t} isRTL={isRTL} language={language} />}
+        {currentPage === 'incidents' && <IncidentsList incidents={incidents} setIncidents={setIncidents} t={t} isRTL={isRTL} language={language} />}
+        {currentPage === 'workers' && <WorkersList workers={workers} t={t} isRTL={isRTL} language={language} />}
+        {currentPage === 'checklist' && <DailyChecklist t={t} isRTL={isRTL} language={language} />}
+        {currentPage === 'search' && <SearchPage incidents={incidents} workers={workers} t={t} isRTL={isRTL} language={language} />}
+        {currentPage === 'reports' && <ReportsPage incidents={incidents} t={t} isRTL={isRTL} language={language} />}
+      </main>
+
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg">
+        <div className="flex justify-around p-2">
+          <NavButton icon={<Home size={24} />} label={t.dashboard} active={currentPage === 'dashboard'} onClick={() => setCurrentPage('dashboard')} />
+          <NavButton icon={<AlertTriangle size={24} />} label={t.alerts} onClick={() => setCurrentPage('incidents')} />
+          <NavButton icon={<FileText size={24} />} label={t.search} onClick={() => setCurrentPage('search')} />
+        </div>
+      </nav>
+
+      {currentPage === 'dashboard' && (
+        <button onClick={() => setCurrentPage('report')} className="fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white rounded-full p-4 shadow-2xl hover:bg-blue-700 transition-all">
+          <Plus size={32} />
+        </button>
+      )}
+    </div>
+  );
+}
+
+function Dashboard({ stats, setCurrentPage, t }) {
+  const quickActions = [
+    { icon: <Camera size={32} className="text-pink-600" />, action: () => setCurrentPage('report') },
+    { icon: <Users size={32} className="text-purple-600" />, action: () => setCurrentPage('workers') },
+    { icon: <ClipboardCheck size={32} className="text-blue-600" />, action: () => setCurrentPage('checklist') },
+    { icon: <AlertTriangle size={32} className="text-yellow-600" />, action: () => setCurrentPage('incidents') }
+  ];
+
+  return (
+    <div className="p-4 space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <StatCard icon={<Users size={40} />} value={stats.totalWorkers} label={t.currentWorkers} />
+        <StatCard icon={<FileText size={40} />} value={9} label={t.safetyIndex} />
+      </div>
+
+      <div className="grid grid-cols-4 gap-3">
+        {quickActions.map((action, idx) => (
+          <button key={idx} onClick={action.action} className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow flex flex-col items-center justify-center">
+            {action.icon}
+          </button>
+        ))}
+      </div>
+
+      <div className="space-y-3">
+        <Card title={t.activeWorkers} value={9} onClick={() => setCurrentPage('workers')} />
+      </div>
+    </div>
+  );
+}
+
+function ReportIncident({ setCurrentPage, incidents, setIncidents, t, isRTL, language }) {
+  const [formData, setFormData] = useState({
+    description: '',
+    location: '',
+    riskCategory: '',
+    contractor: '',
+    image: null
+  });
+  const [imagePreview, setImagePreview] = useState(null);
+  const [showRiskMenu, setShowRiskMenu] = useState(false);
+
+  const riskCategories = language === 'he' ? [
+    'שילוט/סימון',
+    'סולמות/משטחי עבודה',
+    'חלל מוקף - חדר סגור ללא אוור',
+    'חשמל ציוד וכלים חשמליים',
+    'גידור מפני נפילה',
+    'חפירות/שוחות',
+    'ציוד מגן אישי',
+    'צמ"ה',
+    'היערכות לחירום'
+  ] : [
+    'Signage/Marking',
+    'Ladders/Work Platforms',
+    'Confined Space',
+    'Electrical Equipment',
+    'Fall Protection',
+    'Excavations/Pits',
+    'PPE',
+    'Heavy Equipment',
+    'Emergency Preparedness'
+  ];
+
+  const handleImageCapture = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+        setFormData({ ...formData, image: reader.result });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSubmit = () => {
+    const newIncident = {
+      id: incidents.length + 1,
+      description: formData.description,
+      descriptionEn: formData.description,
+      severity: language === 'he' ? 'בינונית' : 'Medium',
+      severityEn: 'Medium',
+      location: formData.location,
+      riskCategory: formData.riskCategory,
+      contractor: formData.contractor,
+      status: language === 'he' ? 'פתוח' : 'Open',
+      statusEn: 'Open',
+      date: new Date().toLocaleDateString(language === 'he' ? 'he-IL' : 'en-US'),
+      image: formData.image
+    };
+    setIncidents([newIncident, ...incidents]);
+    setCurrentPage('dashboard');
+  };
+
+  return (
+    <div className="p-4 space-y-4">
+      <h2 className={`text-lg font-bold ${isRTL ? 'text-right' : 'text-left'}`}>{t.incidentDetails}</h2>
+      
+      <div className="bg-white rounded-xl p-4 shadow-md">
+        <label className={`block text-sm font-bold mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>{t.photos} *</label>
+        <input type="file" accept="image/*" capture="environment" onChange={handleImageCapture} className="hidden" id="camera-input" />
+        <div className="flex gap-3 justify-center items-center">
+          <label htmlFor="camera-input" className="bg-gray-200 rounded-lg p-12 cursor-pointer hover:bg-gray-300 flex items-center justify-center">
+            <Camera size={40} className="text-gray-500" />
+          </label>
+          <button className="bg-gray-200 rounded-lg p-12 flex items-center justify-center">
+            <FileText size={40} className="text-gray-500" />
+          </button>
+        </div>
+        {imagePreview && (
+          <div className="mt-3 relative">
+            <img src={imagePreview} alt="Preview" className="w-full rounded-lg" />
+            <button onClick={() => { setImagePreview(null); setFormData({ ...formData, image: null }); }} className={`absolute top-2 ${isRTL ? 'left-2' : 'right-2'} bg-red-600 text-white rounded-full p-1`}>
+              <X size={20} />
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className="bg-white rounded-xl p-4 shadow-md">
+        <label className={`block text-sm font-bold mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>{t.location} *</label>
+        <input type="text" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} className={`w-full border border-gray-300 rounded-lg p-3 ${isRTL ? 'text-right' : 'text-left'}`} />
+      </div>
+
+      <div className="bg-white rounded-xl p-4 shadow-md relative">
+        <label className={`block text-sm font-bold mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>{t.riskCategory} *</label>
+        <button onClick={() => setShowRiskMenu(!showRiskMenu)} className={`w-full border border-gray-300 rounded-lg p-3 ${isRTL ? 'text-right' : 'text-left'} flex items-center justify-between bg-white`}>
+          <ChevronDown size={20} className={`transform ${showRiskMenu ? 'rotate-180' : ''}`} />
+          <span className="text-gray-500">{formData.riskCategory || ''}</span>
+        </button>
+        
+        {showRiskMenu && (
+          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
+            {riskCategories.map((category, idx) => (
+              <button key={idx} onClick={() => { setFormData({ ...formData, riskCategory: category }); setShowRiskMenu(false); }} className={`w-full px-4 py-3 hover:bg-gray-100 ${isRTL ? 'text-right' : 'text-left'} border-b border-gray-100`}>
+                {category}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="bg-white rounded-xl p-4 shadow-md">
+        <label className={`block text-sm font-bold mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>{t.description} *</label>
+        <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} className={`w-full border border-gray-300 rounded-lg p-3 ${isRTL ? 'text-right' : 'text-left'}`} rows="4" placeholder={t.descriptionPlaceholder} />
+      </div>
+
+      <div className="bg-white rounded-xl p-4 shadow-md">
+        <label className={`block text-sm font-bold mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>{t.contractor} *</label>
+        <input type="text" value={formData.contractor} onChange={(e) => setFormData({ ...formData, contractor: e.target.value })} className={`w-full border border-gray-300 rounded-lg p-3 ${isRTL ? 'text-right' : 'text-left'}`} />
+      </div>
+
+      <button onClick={handleSubmit} disabled={!formData.description || !formData.location || !formData.riskCategory} className="w-full bg-green-600 text-white rounded-lg p-4 font-bold text-lg disabled:bg-gray-400 disabled:cursor-not-allowed hover:bg-green-700">
+        {t.submitReport}
+      </button>
+    </div>
+  );
+}
+
+function IncidentsList({ incidents, setIncidents, t, isRTL, language }) {
+  const [selectedIncident, setSelectedIncident] = useState(null);
+
+  const handleToggleStatus = (id) => {
+    setIncidents(incidents.map(inc => {
+      if (inc.id === id) {
+        const isOpen = inc.status === 'פתוח' || inc.status === 'Open';
+        return {
+          ...inc,
+          status: isOpen ? (language === 'he' ? 'טופל' : 'Handled') : (language === 'he' ? 'פתוח' : 'Open'),
+          statusEn: isOpen ? 'Handled' : 'Open'
+        };
+      }
+      return inc;
+    }));
+  };
+
+  const getDisplayText = (incident, field) => {
+    if (language === 'he') {
+      return incident[field];
+    }
+    return incident[field + 'En'] || incident[field];
+  };
+
+  return (
+    <div className="p-4 space-y-3">
+      {incidents.map((incident) => {
+        const displayStatus = getDisplayText(incident, 'status');
+        const isOpen = displayStatus === 'פתוח' || displayStatus === 'Open';
+        
+        return (
+          <div key={incident.id} className="bg-white rounded-xl p-4 shadow-md cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setSelectedIncident(incident)}>
+            <div className={`flex ${isRTL ? 'flex-row-reverse' : ''} justify-between items-start mb-2`}>
+              <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+                getDisplayText(incident, 'severity') === 'חמורה' || getDisplayText(incident, 'severity') === 'Severe' ? 'bg-red-100 text-red-700' :
+                getDisplayText(incident, 'severity') === 'בינונית' || getDisplayText(incident, 'severity') === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
+                'bg-green-100 text-green-700'
+              }`}>
+                {getDisplayText(incident, 'severity')}
+              </span>
+              <span className="text-gray-500 text-sm">{incident.date}</span>
+            </div>
+            <p className={`${isRTL ? 'text-right' : 'text-left'} mb-2 font-medium`}>{getDisplayText(incident, 'description')}</p>
+            {incident.location && (
+              <p className={`${isRTL ? 'text-right' : 'text-left'} text-sm text-gray-600 mb-2`}>
+                📍 {incident.location}
+              </p>
+            )}
+            {incident.image && (
+              <img src={incident.image} alt="Incident" className="w-full rounded-lg mb-3" />
+            )}
+            <div className={`flex items-center justify-center gap-2 py-2 rounded-lg font-bold ${
+              isOpen ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+            }`}>
+              {isOpen ? `⚠️ ${t.open}` : `✓ ${t.handled}`}
+            </div>
+          </div>
+        );
+      })}
+
+      {selectedIncident && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end" onClick={() => setSelectedIncident(null)}>
+          <div className="bg-white rounded-t-3xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 bg-gradient-to-r from-blue-900 to-blue-700 text-white p-4 flex items-center justify-between rounded-t-3xl">
+              <button onClick={() => setSelectedIncident(null)}>
+                <X size={24} />
+              </button>
+              <h2 className="text-xl font-bold">{language === 'he' ? 'פרטי מפגע' : 'Incident Details'}</h2>
+              <div className="w-6"></div>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div className="flex justify-center">
+                <span className={`px-6 py-2 rounded-full text-lg font-bold ${
+                  getDisplayText(selectedIncident, 'severity') === 'חמורה' || getDisplayText(selectedIncident, 'severity') === 'Severe' ? 'bg-red-100 text-red-700' :
+                  getDisplayText(selectedIncident, 'severity') === 'בינונית' || getDisplayText(selectedIncident, 'severity') === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
+                  'bg-green-100 text-green-700'
+                }`}>
+                  {getDisplayText(selectedIncident, 'severity')}
+                </span>
+              </div>
+
+              <div className={`${isRTL ? 'text-right' : 'text-left'}`}>
+                <p className="text-sm text-gray-500">{language === 'he' ? 'תאריך' : 'Date'}</p>
+                <p className="text-lg font-medium">{selectedIncident.date}</p>
+              </div>
+
+              <div className={`${isRTL ? 'text-right' : 'text-left'}`}>
+                <p className="text-sm text-gray-500 mb-1">{t.description}</p>
+                <p className="text-lg">{getDisplayText(selectedIncident, 'description')}</p>
+              </div>
+
+              {selectedIncident.location && (
+                <div className={`${isRTL ? 'text-right' : 'text-left'}`}>
+                  <p className="text-sm text-gray-500 mb-1">{t.location}</p>
+                  <p className="text-lg">📍 {selectedIncident.location}</p>
+                </div>
+              )}
+
+              {selectedIncident.riskCategory && (
+                <div className={`${isRTL ? 'text-right' : 'text-left'}`}>
+                  <p className="text-sm text-gray-500 mb-1">{t.riskCategory}</p>
+                  <p className="text-lg">{selectedIncident.riskCategory}</p>
+                </div>
+              )}
+
+              {selectedIncident.image && (
+                <div>
+                  <p className={`text-sm text-gray-500 mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>{t.photos}</p>
+                  <img src={selectedIncident.image} alt="Incident" className="w-full rounded-lg" />
+                </div>
+              )}
+
+              <div className="space-y-3 pt-4">
+                <button onClick={() => { handleToggleStatus(selectedIncident.id); setSelectedIncident(null); }} className={`w-full py-3 rounded-lg font-bold text-lg ${
+                  selectedIncident.status === 'פתוח' || selectedIncident.status === 'Open'
+                    ? 'bg-green-600 text-white hover:bg-green-700' 
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                }`}>
+                  {selectedIncident.status === 'פתוח' || selectedIncident.status === 'Open' 
+                    ? `✓ ${language === 'he' ? 'סמן כטופל' : 'Mark as Handled'}` 
+                    : `↻ ${language === 'he' ? 'פתח מחדש' : 'Reopen'}`}
+                </button>
+                
+                <button onClick={() => setSelectedIncident(null)} className="w-full py-3 rounded-lg font-bold text-lg bg-gray-200 text-gray-700 hover:bg-gray-300">
+                  {language === 'he' ? 'סגור' : 'Close'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ReportsPage({ incidents, t, isRTL, language }) {
+  const [reportType, setReportType] = useState('weekly');
+
+  const totalIncidents = incidents.length;
+  const resolvedIncidents = incidents.filter(i => i.status === 'טופל' || i.status === 'Handled').length;
+  const pendingIncidents = totalIncidents - resolvedIncidents;
+  const safetyScore = totalIncidents > 0 ? Math.round((resolvedIncidents / totalIncidents) * 100) : 100;
+
+  const getDisplayText = (item, field) => {
+    if (language === 'he') return item[field];
+    return item[field + 'En'] || item[field];
+  };
+
+  // Group by severity
+  const bySeverity = {
+    severe: incidents.filter(i => getDisplayText(i, 'severity') === 'חמורה' || getDisplayText(i, 'severity') === 'Severe').length,
+    medium: incidents.filter(i => getDisplayText(i, 'severity') === 'בינונית' || getDisplayText(i, 'severity') === 'Medium').length,
+    low: incidents.filter(i => getDisplayText(i, 'severity') === 'קלה' || getDisplayText(i, 'severity') === 'Low').length
+  };
+
+  // Group by category
+  const byCategory = incidents.reduce((acc, inc) => {
+    const cat = inc.riskCategory || (language === 'he' ? 'אחר' : 'Other');
+    acc[cat] = (acc[cat] || 0) + 1;
+    return acc;
+  }, {});
+
+  const handleExport = (format) => {
+    const reportData = {
+      generatedAt: new Date().toISOString(),
+      reportType,
+      summary: {
+        total: totalIncidents,
+        resolved: resolvedIncidents,
+        pending: pendingIncidents,
+        safetyScore
+      },
+      bySeverity,
+      byCategory,
+      incidents
+    };
+
+    if (format === 'json') {
+      const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `safety-report-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+    }
+  };
+
+  return (
+    <div className="p-4 space-y-4">
+      {/* Report Type Selection */}
+      <div className="flex gap-2">
+        {['weekly', 'monthly', 'custom'].map(type => (
+          <button
+            key={type}
+            onClick={() => setReportType(type)}
+            className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+              reportType === type
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            {type === 'weekly' ? t.weeklyReport : type === 'monthly' ? t.monthlyReport : t.customReport}
+          </button>
+        ))}
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="bg-white rounded-xl p-4 shadow-md text-center">
+          <p className="text-3xl font-bold text-blue-600">{totalIncidents}</p>
+          <p className="text-sm text-gray-600">{t.totalIncidents}</p>
+        </div>
+        <div className="bg-white rounded-xl p-4 shadow-md text-center">
+          <p className="text-3xl font-bold text-green-600">{resolvedIncidents}</p>
+          <p className="text-sm text-gray-600">{t.resolvedIncidents}</p>
+        </div>
+        <div className="bg-white rounded-xl p-4 shadow-md text-center">
+          <p className="text-3xl font-bold text-orange-600">{pendingIncidents}</p>
+          <p className="text-sm text-gray-600">{t.pendingIncidents}</p>
+        </div>
+        <div className="bg-white rounded-xl p-4 shadow-md text-center">
+          <p className="text-3xl font-bold text-purple-600">{safetyScore}%</p>
+          <p className="text-sm text-gray-600">{t.safetyScore}</p>
+        </div>
+      </div>
+
+      {/* By Severity */}
+      <div className="bg-white rounded-xl p-4 shadow-md">
+        <h3 className={`font-bold mb-3 ${isRTL ? 'text-right' : 'text-left'}`}>{t.incidentsBySeverity}</h3>
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <span className="w-20 text-sm">{t.severe}</span>
+            <div className="flex-1 bg-gray-200 rounded-full h-4">
+              <div className="bg-red-500 h-4 rounded-full" style={{ width: `${totalIncidents ? (bySeverity.severe / totalIncidents) * 100 : 0}%` }}></div>
+            </div>
+            <span className="w-8 text-sm font-bold">{bySeverity.severe}</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="w-20 text-sm">{t.medium}</span>
+            <div className="flex-1 bg-gray-200 rounded-full h-4">
+              <div className="bg-yellow-500 h-4 rounded-full" style={{ width: `${totalIncidents ? (bySeverity.medium / totalIncidents) * 100 : 0}%` }}></div>
+            </div>
+            <span className="w-8 text-sm font-bold">{bySeverity.medium}</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="w-20 text-sm">{t.low}</span>
+            <div className="flex-1 bg-gray-200 rounded-full h-4">
+              <div className="bg-green-500 h-4 rounded-full" style={{ width: `${totalIncidents ? (bySeverity.low / totalIncidents) * 100 : 0}%` }}></div>
+            </div>
+            <span className="w-8 text-sm font-bold">{bySeverity.low}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* By Category */}
+      <div className="bg-white rounded-xl p-4 shadow-md">
+        <h3 className={`font-bold mb-3 ${isRTL ? 'text-right' : 'text-left'}`}>{t.incidentsByCategory}</h3>
+        <div className="space-y-2">
+          {Object.entries(byCategory).map(([cat, count]) => (
+            <div key={cat} className={`flex items-center justify-between py-2 border-b border-gray-100 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <span className="text-sm">{cat}</span>
+              <span className="font-bold text-blue-600">{count}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Export Buttons */}
+      <div className="flex gap-3">
+        <button
+          onClick={() => handleExport('json')}
+          className="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 transition-colors"
+        >
+          {t.exportExcel} (JSON)
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function SearchPage({ incidents, workers, t, isRTL, language }) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchFilter, setSearchFilter] = useState('all');
+
+  const getDisplayText = (item, field) => {
+    if (language === 'he') return item[field];
+    return item[field + 'En'] || item[field];
+  };
+
+  const filteredIncidents = incidents.filter(inc => {
+    const desc = getDisplayText(inc, 'description').toLowerCase();
+    const loc = (inc.location || '').toLowerCase();
+    const cat = (inc.riskCategory || '').toLowerCase();
+    const query = searchQuery.toLowerCase();
+    return desc.includes(query) || loc.includes(query) || cat.includes(query);
+  });
+
+  const filteredWorkers = workers.filter(w => {
+    const name = (language === 'he' ? w.name : w.nameEn).toLowerCase();
+    const role = (language === 'he' ? w.role : w.roleEn).toLowerCase();
+    return name.includes(searchQuery.toLowerCase()) || role.includes(searchQuery.toLowerCase());
+  });
+
+  const showIncidents = searchFilter === 'all' || searchFilter === 'incidents';
+  const showWorkers = searchFilter === 'all' || searchFilter === 'workers';
+
+  return (
+    <div className="p-4 space-y-4">
+      {/* Search Input */}
+      <div className="bg-white rounded-xl p-4 shadow-md">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder={t.searchPlaceholder}
+          className={`w-full border border-gray-300 rounded-lg p-3 text-lg ${isRTL ? 'text-right' : 'text-left'}`}
+          autoFocus
+        />
+      </div>
+
+      {/* Filter Buttons */}
+      <div className="flex gap-2">
+        {['all', 'incidents', 'workers'].map(filter => (
+          <button
+            key={filter}
+            onClick={() => setSearchFilter(filter)}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              searchFilter === filter
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            {filter === 'all' ? t.all : filter === 'incidents' ? t.incidentsTab : t.activeWorkers}
+          </button>
+        ))}
+      </div>
+
+      {/* Results */}
+      {searchQuery && (
+        <div className="space-y-4">
+          {/* Incidents Results */}
+          {showIncidents && filteredIncidents.length > 0 && (
+            <div>
+              <h3 className={`font-bold text-gray-600 mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+                {t.incidentsTab} ({filteredIncidents.length})
+              </h3>
+              {filteredIncidents.map(inc => (
+                <div key={inc.id} className="bg-white rounded-xl p-4 shadow-md mb-2">
+                  <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+                    <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+                      getDisplayText(inc, 'severity') === 'חמורה' || getDisplayText(inc, 'severity') === 'Severe'
+                        ? 'bg-red-100 text-red-700'
+                        : getDisplayText(inc, 'severity') === 'בינונית' || getDisplayText(inc, 'severity') === 'Medium'
+                        ? 'bg-yellow-100 text-yellow-700'
+                        : 'bg-green-100 text-green-700'
+                    }`}>
+                      {getDisplayText(inc, 'severity')}
+                    </span>
+                    <span className="text-sm text-gray-500">{inc.date}</span>
+                  </div>
+                  <p className={`mt-2 ${isRTL ? 'text-right' : 'text-left'}`}>{getDisplayText(inc, 'description')}</p>
+                  {inc.location && (
+                    <p className={`text-sm text-gray-500 mt-1 ${isRTL ? 'text-right' : 'text-left'}`}>📍 {inc.location}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Workers Results */}
+          {showWorkers && filteredWorkers.length > 0 && (
+            <div>
+              <h3 className={`font-bold text-gray-600 mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+                {t.activeWorkers} ({filteredWorkers.length})
+              </h3>
+              {filteredWorkers.map(w => (
+                <div key={w.id} className={`bg-white rounded-xl p-4 shadow-md mb-2 flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <div className="bg-blue-100 rounded-full p-2">
+                    <Users size={24} className="text-blue-600" />
+                  </div>
+                  <div className={`${isRTL ? 'text-right' : 'text-left'}`}>
+                    <p className="font-bold">{language === 'he' ? w.name : w.nameEn}</p>
+                    <p className="text-sm text-gray-500">{language === 'he' ? w.role : w.roleEn}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* No Results */}
+          {((showIncidents && filteredIncidents.length === 0) && (showWorkers && filteredWorkers.length === 0)) && (
+            <div className="text-center py-8">
+              <p className="text-gray-500 text-lg">{t.noResults}</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!searchQuery && (
+        <div className="text-center py-12">
+          <span className="text-6xl mb-4 block">🔍</span>
+          <p className="text-gray-500">{t.searchPlaceholder}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DailyChecklist({ t, isRTL, language }) {
+  const [checklistItems, setChecklistItems] = useState([
+    // PPE
+    { id: 1, category: 'ppe', item: 'hardHats', status: 'notChecked', note: '' },
+    { id: 2, category: 'ppe', item: 'safetyVests', status: 'notChecked', note: '' },
+    { id: 3, category: 'ppe', item: 'safetyBoots', status: 'notChecked', note: '' },
+    { id: 4, category: 'ppe', item: 'safetyGlasses', status: 'notChecked', note: '' },
+    // Site Access
+    { id: 5, category: 'siteAccess', item: 'gatesSecured', status: 'notChecked', note: '' },
+    { id: 6, category: 'siteAccess', item: 'signageVisible', status: 'notChecked', note: '' },
+    { id: 7, category: 'siteAccess', item: 'unauthorizedAccess', status: 'notChecked', note: '' },
+    // Fall Protection
+    { id: 8, category: 'fallProtection', item: 'guardrailsInstalled', status: 'notChecked', note: '' },
+    { id: 9, category: 'fallProtection', item: 'openingsProtected', status: 'notChecked', note: '' },
+    { id: 10, category: 'fallProtection', item: 'laddersSecured', status: 'notChecked', note: '' },
+    // Electrical Safety
+    { id: 11, category: 'electricalSafety', item: 'panelsLocked', status: 'notChecked', note: '' },
+    { id: 12, category: 'electricalSafety', item: 'cordsInspected', status: 'notChecked', note: '' },
+    { id: 13, category: 'electricalSafety', item: 'gfciWorking', status: 'notChecked', note: '' },
+    // Fire Safety
+    { id: 14, category: 'fireSafety', item: 'extinguishersAccessible', status: 'notChecked', note: '' },
+    { id: 15, category: 'fireSafety', item: 'exitsClear', status: 'notChecked', note: '' },
+    { id: 16, category: 'fireSafety', item: 'hotWorkPermits', status: 'notChecked', note: '' },
+    // Housekeeping
+    { id: 17, category: 'housekeeping', item: 'walkwaysClear', status: 'notChecked', note: '' },
+    { id: 18, category: 'housekeeping', item: 'wasteDisposed', status: 'notChecked', note: '' },
+    { id: 19, category: 'housekeeping', item: 'materialsStored', status: 'notChecked', note: '' },
+  ]);
+  const [expandedCategories, setExpandedCategories] = useState({
+    ppe: true,
+    siteAccess: false,
+    fallProtection: false,
+    electricalSafety: false,
+    fireSafety: false,
+    housekeeping: false
+  });
+  const [saved, setSaved] = useState(false);
+
+  const categories = ['ppe', 'siteAccess', 'fallProtection', 'electricalSafety', 'fireSafety', 'housekeeping'];
+
+  const toggleCategory = (cat) => {
+    setExpandedCategories({ ...expandedCategories, [cat]: !expandedCategories[cat] });
+  };
+
+  const updateItem = (id, field, value) => {
+    setChecklistItems(checklistItems.map(item =>
+      item.id === id ? { ...item, [field]: value } : item
+    ));
+  };
+
+  const getCategoryItems = (category) => checklistItems.filter(item => item.category === category);
+
+  const getCategoryProgress = (category) => {
+    const items = getCategoryItems(category);
+    const checked = items.filter(i => i.status !== 'notChecked').length;
+    return { checked, total: items.length };
+  };
+
+  const getTotalProgress = () => {
+    const checked = checklistItems.filter(i => i.status !== 'notChecked').length;
+    const passed = checklistItems.filter(i => i.status === 'passed').length;
+    return { checked, passed, total: checklistItems.length };
+  };
+
+  const handleSave = () => {
+    const savedData = {
+      date: new Date().toISOString(),
+      items: checklistItems,
+      completedBy: language === 'he' ? 'ויקטור ימין' : 'Victor Yamin'
+    };
+    const existingChecklists = JSON.parse(localStorage.getItem('safetyChecklists') || '[]');
+    existingChecklists.unshift(savedData);
+    localStorage.setItem('safetyChecklists', JSON.stringify(existingChecklists));
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+  };
+
+  const progress = getTotalProgress();
+
+  return (
+    <div className="p-4 space-y-4">
+      {/* Progress Summary */}
+      <div className="bg-white rounded-xl p-4 shadow-md">
+        <div className="flex justify-between items-center mb-3">
+          <span className="font-bold">{t.checklistTitle}</span>
+          <span className="text-sm text-gray-500">{progress.checked}/{progress.total}</span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-3">
+          <div
+            className="bg-gradient-to-r from-blue-500 to-green-500 h-3 rounded-full transition-all duration-300"
+            style={{ width: `${(progress.checked / progress.total) * 100}%` }}
+          />
+        </div>
+        <div className="flex justify-between mt-2 text-sm">
+          <span className="text-green-600">✓ {progress.passed} {t.passed}</span>
+          <span className="text-red-600">✗ {progress.checked - progress.passed} {t.failed}</span>
+        </div>
+      </div>
+
+      {/* Categories */}
+      {categories.map(category => {
+        const catProgress = getCategoryProgress(category);
+        const items = getCategoryItems(category);
+
+        return (
+          <div key={category} className="bg-white rounded-xl shadow-md overflow-hidden">
+            <button
+              onClick={() => toggleCategory(category)}
+              className={`w-full p-4 flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''} bg-gray-50 hover:bg-gray-100 transition-colors`}
+            >
+              <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                <span className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold ${
+                  catProgress.checked === catProgress.total && catProgress.total > 0 ? 'bg-green-500' : 'bg-blue-500'
+                }`}>
+                  {catProgress.checked === catProgress.total && catProgress.total > 0 ? '✓' : catProgress.checked}
+                </span>
+                <span className="font-bold">{t[category]}</span>
+              </div>
+              <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                <span className="text-sm text-gray-500">{catProgress.checked}/{catProgress.total}</span>
+                <ChevronDown size={20} className={`transform transition-transform ${expandedCategories[category] ? 'rotate-180' : ''}`} />
+              </div>
+            </button>
+
+            {expandedCategories[category] && (
+              <div className="divide-y divide-gray-100">
+                {items.map(item => (
+                  <div key={item.id} className="p-4">
+                    <div className={`flex items-center justify-between mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                      <span className={`flex-1 ${isRTL ? 'text-right' : 'text-left'}`}>{t[item.item]}</span>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => updateItem(item.id, 'status', 'passed')}
+                          className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                            item.status === 'passed'
+                              ? 'bg-green-500 text-white'
+                              : 'bg-gray-200 text-gray-600 hover:bg-green-100'
+                          }`}
+                        >
+                          ✓
+                        </button>
+                        <button
+                          onClick={() => updateItem(item.id, 'status', 'failed')}
+                          className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                            item.status === 'failed'
+                              ? 'bg-red-500 text-white'
+                              : 'bg-gray-200 text-gray-600 hover:bg-red-100'
+                          }`}
+                        >
+                          ✗
+                        </button>
+                      </div>
+                    </div>
+                    {item.status === 'failed' && (
+                      <input
+                        type="text"
+                        value={item.note}
+                        onChange={(e) => updateItem(item.id, 'note', e.target.value)}
+                        placeholder={t.addNote}
+                        className={`w-full border border-gray-300 rounded-lg p-2 text-sm mt-2 ${isRTL ? 'text-right' : 'text-left'}`}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      {/* Save Button */}
+      <button
+        onClick={handleSave}
+        className={`w-full py-4 rounded-xl font-bold text-lg transition-colors ${
+          saved
+            ? 'bg-green-500 text-white'
+            : 'bg-blue-600 text-white hover:bg-blue-700'
+        }`}
+      >
+        {saved ? `✓ ${t.checklistSaved}` : t.saveChecklist}
+      </button>
+    </div>
+  );
+}
+
+function WorkersList({ workers, t, isRTL, language }) {
+  return (
+    <div className="p-4 space-y-3">
+      {workers.map((worker) => (
+        <div key={worker.id} className={`bg-white rounded-xl p-4 shadow-md flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+          <div className="bg-blue-100 rounded-full p-3">
+            <Users size={32} className="text-blue-600" />
+          </div>
+          <div className={`flex-1 ${isRTL ? 'text-right' : 'text-left'}`}>
+            <h3 className="font-bold text-lg">{language === 'he' ? worker.name : worker.nameEn}</h3>
+            <p className="text-gray-600">{language === 'he' ? worker.role : worker.roleEn}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function StatCard({ icon, value, label }) {
+  return (
+    <div className="bg-white rounded-xl p-4 shadow-md text-center">
+      <div className="flex justify-center text-gray-400 mb-2">{icon}</div>
+      <div className="text-3xl font-bold text-blue-600">{value}</div>
+      <div className="text-sm text-gray-600 mt-1">{label}</div>
+    </div>
+  );
+}
+
+function Card({ title, value, onClick }) {
+  return (
+    <div onClick={onClick} className={`bg-white rounded-xl p-4 shadow-md flex justify-between items-center ${onClick ? 'cursor-pointer hover:shadow-lg' : ''}`}>
+      <span className="text-2xl font-bold text-blue-600">{value}</span>
+      <span className="text-right flex-1 mr-3 font-medium">{title}</span>
+    </div>
+  );
+}
+
+function NavButton({ icon, label, active, onClick }) {
+  return (
+    <button onClick={onClick} className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors ${active ? 'text-blue-600' : 'text-gray-500'}`}>
+      {icon}
+      <span className="text-xs">{label}</span>
+    </button>
+  );
+}
+
+function SidebarSection({ title, children, expanded, onToggle, isRTL }) {
+  return (
+    <div className="border-b border-gray-200">
+      <button onClick={onToggle} className={`w-full px-4 py-3 text-sm font-bold text-gray-500 bg-gray-50 flex items-center ${isRTL ? 'flex-row-reverse' : ''} justify-between hover:bg-gray-100 transition-colors`}>
+        <span>{title}</span>
+        <ChevronDown size={20} className={`transform transition-transform ${expanded ? 'rotate-180' : ''}`} />
+      </button>
+      {expanded && <div>{children}</div>}
+    </div>
+  );
+}
+
+function SidebarItem({ icon, label, isRTL }) {
+  return (
+    <button className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors ${isRTL ? 'text-right flex-row-reverse' : 'text-left'} border-b border-gray-100`}>
+      <div className="text-gray-400">{icon}</div>
+      <span className="flex-1 text-sm">{label}</span>
+    </button>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<SafetyApp />);
+  </script>
+</body>
+</html>
